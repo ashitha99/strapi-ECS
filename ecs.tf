@@ -23,13 +23,16 @@ resource "aws_ecs_task_definition" "strapi" {
     }
   ])
 }
-
 resource "aws_ecs_service" "strapi" {
   name            = "strapi-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.strapi.arn
   desired_count   = 1
-  launch_type     = "FARGATE"
+
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+  }
 
   network_configuration {
     subnets         = var.subnet_ids
@@ -42,7 +45,6 @@ resource "aws_ecs_service" "strapi" {
     container_name   = "strapi"
     container_port   = 1337
   }
+
   depends_on = [aws_lb_listener.http_listener]
-
 }
-
